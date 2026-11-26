@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Time Traveller</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <div id="loading-screen" class="loading-screen" role="status" aria-live="polite">
+    <div class="loading-panel">
+      <div>Loading game...</div>
+      <div class="loading-track" aria-hidden="true">
+        <div id="loading-progress" class="loading-progress"></div>
+      </div>
+      <div id="loading-percent">0%</div>
+      <div id="loading-error" class="loading-error" role="alert"></div>
+    </div>
+  </div>
+
+  <div id="game" class="game-layout is-hidden">
+    <div class="map-wrap">
+      <div class="map-stage">
+        <table id="map" class="map" aria-label="Game map"></table>
+        <div id="player" class="player" aria-label="Player character"></div>
+        <div id="spider-1" class="spider" aria-label="Spider character 1"></div>
+        <div id="spider-2" class="spider" aria-label="Spider character 2"></div>
+        <div id="spider-3" class="spider" aria-label="Spider character 3"></div>
+        <div id="spider-4" class="spider" aria-label="Spider character 4"></div>
+        <div id="spider-5" class="spider" aria-label="Spider character 5"></div>
+        <div class="game-over-message" role="alert">
+          <div id="game-over-title">Game Over</div>
+          <div id="game-over-cause" class="game-over-cause"></div>
+          <button id="retry-button" class="retry-button" type="button">Retry</button>
+        </div>
+      </div>
+    </div>
+    <div class="game-hud">
+      <div id="coin-display" class="coin-display" aria-live="polite">
+        <img src="css/tiles/coin.gif" alt="" class="coin-counter-icon">
+        <span>Coins</span>
+        <span id="coin-count">0 / 20</span>
+      </div>
+      <div id="energy-display" class="energy-display" aria-live="polite">
+        <div class="energy-label">
+          <span>Energy</span>
+          <span id="energy-value">100%</span>
+        </div>
+        <div class="energy-track" role="progressbar" aria-label="Player energy" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
+          <div id="energy-level" class="energy-level"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config/constants.js"></script>
+  <script src="js/map/terrain.js"></script>
+  <script src="js/map/map-generator.js"></script>
+  <script src="js/map/coin-manager.js"></script>
+  <script src="js/rendering/map-renderer.js"></script>
+  <script src="js/player/player.js"></script>
+  <script src="js/characters/autonomous-character.js"></script>
+  <script src="js/characters/spider.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

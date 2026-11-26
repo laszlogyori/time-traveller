@@ -1,0 +1,460 @@
+:root {
+  --cell-size: 48px;
+  --player-size: 54px;
+  --ground: #5da658;
+  --rock: #7a7a7a;
+  --water: #3d80d8;
+  --forest: #276342;
+  --bg: #121212;
+  --text: #e8e8e8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  margin: 0;
+  width: 100%;
+  height: 100vh;
+  min-height: 100vh;
+  padding: 16px;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  background: var(--bg);
+}
+
+.loading-panel {
+  width: min(320px, calc(100% - 32px));
+  text-align: center;
+}
+
+.loading-track {
+  height: 12px;
+  margin: 16px 0 8px;
+  overflow: hidden;
+  border: 1px solid #444;
+  border-radius: 6px;
+  background: #222;
+}
+
+.loading-progress {
+  width: 0;
+  height: 100%;
+  background: #6bb5e8;
+  transition: width 0.15s ease-out;
+}
+
+.loading-error {
+  margin-top: 12px;
+  color: #ff8c8c;
+}
+
+h1 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.game-layout {
+  width: min(100%, 2200px);
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: calc(100vh - 90px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.map-wrap {
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid #2a2a2a;
+  background: #0e0e0e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  isolation: isolate;
+  contain: paint;
+}
+
+.game-hud {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: stretch;
+  justify-content: center;
+  gap: 12px;
+  width: min(100%, 460px);
+  margin-bottom: 8px;
+}
+
+.coin-display,
+.energy-display {
+  flex: 0 0 auto;
+  padding: 10px 12px;
+  border: 1px solid #53615a;
+  border-radius: 8px;
+  background: rgba(18, 18, 18, 0.9);
+  color: var(--text);
+}
+
+.coin-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 150px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.coin-counter-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.energy-display {
+  width: min(220px, calc(100% - 24px));
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.energy-label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.energy-track {
+  height: 12px;
+  overflow: hidden;
+  border: 1px solid #444;
+  border-radius: 6px;
+  background: #222;
+}
+
+.energy-level {
+  width: 100%;
+  height: 100%;
+  background: #73c77a;
+  transition: width 0.2s ease, background-color 0.2s ease;
+}
+
+.energy-display.energy-low {
+  border-color: #ff6b6b;
+  box-shadow: 0 0 14px rgba(255, 70, 70, 0.85);
+  animation: energy-warning 0.3s ease-in-out 3;
+}
+
+.energy-display.energy-low .energy-level {
+  background: #ff6b6b;
+}
+
+@keyframes energy-warning {
+  50% { transform: scale(1.05); }
+}
+
+.is-hidden {
+  display: none !important;
+}
+
+table.map {
+  border-collapse: collapse;
+  table-layout: fixed;
+  flex: 0 0 auto;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  will-change: transform;
+  contain: paint;
+}
+
+.coin {
+  position: absolute;
+  z-index: 2;
+  width: 28px;
+  height: 28px;
+  background: center / contain no-repeat url('tiles/coin.gif');
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.map-stage {
+  position: relative;
+  flex: 0 0 auto;
+  isolation: isolate;
+  contain: layout paint;
+}
+
+.map-stage.game-over::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: rgba(130, 0, 0, 0.48);
+  mix-blend-mode: multiply;
+}
+
+.map-stage.game-won::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: rgba(0, 100, 45, 0.42);
+}
+
+.game-over-message {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: clamp(32px, 6vw, 72px);
+  font-weight: 700;
+  text-shadow: 0 3px 8px #300;
+  pointer-events: none;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.map-stage.game-over .game-over-message,
+.map-stage.game-won .game-over-message {
+  display: flex;
+}
+
+.game-over-cause {
+  font-size: clamp(18px, 3vw, 32px);
+  font-weight: 400;
+}
+
+.map-stage.game-over::after {
+  animation-play-state: paused;
+}
+
+.retry-button {
+  padding: 12px 30px;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ff6b6b, #b51232);
+  color: #fff;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 700;
+  text-shadow: 0 1px 3px #400;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+  pointer-events: auto;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.retry-button:hover,
+.retry-button:focus-visible {
+  filter: brightness(1.15);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.55);
+}
+
+.retry-button:active {
+  transform: translateY(1px);
+}
+
+.map-stage.season-magic::after {
+  content: '';
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  left: var(--magic-x, 50%);
+  top: var(--magic-y, 50%);
+  z-index: 2;
+  pointer-events: none;
+  border: 4px solid rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+  background: rgba(153, 222, 255, 0.16);
+  transform: translate(-50%, -50%) scale(0.2);
+  will-change: transform, opacity;
+  animation: season-magic 1s ease-out both;
+}
+
+@keyframes season-magic {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.2);
+  }
+  22% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(6);
+  }
+}
+
+.cell {
+  width: var(--cell-size);
+  height: var(--cell-size);
+  min-width: var(--cell-size);
+  min-height: var(--cell-size);
+  border: none;
+  padding: 0;
+  background-image: none;
+  background-size: 100%;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  image-rendering: pixelated;
+  opacity: 1;
+  transition: opacity 0.5s ease;
+}
+
+.map-stage.season-magic .cell {
+  opacity: 0.8;
+}
+
+.ground { background-color: var(--ground); }
+.rock { background-color: var(--rock); position: relative; }
+.water { background-color: var(--water); }
+.forest { background-color: var(--forest); position: relative; }
+
+.rock::after,
+.forest::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-size: 100%;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  image-rendering: pixelated;
+  transition: opacity 0.5s ease;
+}
+
+.forest[data-eaten='true']::after {
+  opacity: 0.5;
+}
+
+/* Individual tile files generated from sprites.png. */
+table.map[data-season='summer'] .ground { background-image: url('tiles/cell-summer-ground.png'); }
+table.map[data-season='summer'] .water { background-image: url('tiles/cell-summer-water.png'); }
+table.map[data-season='summer'] .rock { background-image: url('tiles/cell-summer-ground.png'); }
+table.map[data-season='summer'] .rock::after { background-image: url('tiles/cell-summer-rock.png'); }
+table.map[data-season='summer'] .forest { background-image: url('tiles/cell-summer-ground.png'); }
+table.map[data-season='summer'] .forest::after { background-image: url('tiles/cell-summer-forest.png'); }
+table.map[data-season='winter'] .ground { background-image: url('tiles/cell-winter-ground.png'); }
+table.map[data-season='winter'] .water { background-image: url('tiles/cell-winter-water.png'); }
+table.map[data-season='winter'] .rock { background-image: url('tiles/cell-winter-ground.png'); }
+table.map[data-season='winter'] .rock::after { background-image: url('tiles/cell-winter-rock.png'); }
+table.map[data-season='winter'] .forest { background-image: url('tiles/cell-winter-ground.png'); }
+table.map[data-season='winter'] .forest::after { background-image: url('tiles/cell-winter-forest.png'); }
+table.map[data-season='autumn'] .ground { background-image: url('tiles/cell-autumn-ground.png'); }
+table.map[data-season='autumn'] .water { background-image: url('tiles/cell-autumn-water.png'); }
+table.map[data-season='autumn'] .rock { background-image: url('tiles/cell-autumn-ground.png'); }
+table.map[data-season='autumn'] .rock::after { background-image: url('tiles/cell-autumn-rock.png'); }
+table.map[data-season='autumn'] .forest { background-image: url('tiles/cell-autumn-ground.png'); }
+table.map[data-season='autumn'] .forest::after { background-image: url('tiles/cell-autumn-forest.png'); }
+table.map[data-season='spring'] .ground { background-image: url('tiles/cell-spring-ground.png'); }
+table.map[data-season='spring'] .water { background-image: url('tiles/cell-spring-water.png'); }
+table.map[data-season='spring'] .rock { background-image: url('tiles/cell-spring-ground.png'); }
+table.map[data-season='spring'] .rock::after { background-image: url('tiles/cell-spring-rock.png'); }
+table.map[data-season='spring'] .forest { background-image: url('tiles/cell-spring-ground.png'); }
+table.map[data-season='spring'] .forest::after { background-image: url('tiles/cell-spring-forest.png'); }
+
+.player,
+.spider {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.player {
+  width: var(--player-size, 54px);
+  height: var(--player-size, 54px);
+  background: center / contain no-repeat url('tiles/player_stand.png');
+  transform: translate(-50%, -50%) rotate(calc(var(--player-angle, 0deg) - 90deg));
+}
+
+.player.energy-critical {
+  animation: player-energy-pulse 0.8s ease-in-out infinite;
+}
+
+@keyframes player-energy-pulse {
+  50% { filter: drop-shadow(0 0 10px #ff4d4d) brightness(1.35); }
+}
+
+.player[data-sprite='left-leg'] {
+  background-image: url('tiles/player_left_leg.png');
+}
+
+.player[data-sprite='right-leg'] {
+  background-image: url('tiles/player_right_leg.png');
+}
+
+.spider {
+  width: 36px;
+  height: 36px;
+  background: center / contain no-repeat url('tiles/spider_stand.png');
+  transform: translate(-50%, -50%) rotate(var(--character-angle, 0deg));
+}
+
+.spider[data-sprite='left-leg'] {
+  background-image: url('tiles/spider_left_leg.png');
+}
+
+.spider[data-sprite='right-leg'] {
+  background-image: url('tiles/spider_right_leg.png');
+}
+
+.spider-dying {
+  animation: spider-death 3s linear both;
+  will-change: transform;
+}
+
+.spider-fading {
+  opacity: 0;
+  transition: opacity 5s ease;
+}
+
+@keyframes spider-death {
+  0% {
+    transform: translate(-50%, -50%) rotate(var(--character-angle, 0deg));
+  }
+  10% {
+    transform: translate(-50%, -50%) rotate(calc(var(--character-angle, 0deg) - 10deg));
+  }
+  20%, 40%, 60%, 80% {
+    transform: translate(-50%, -50%) rotate(calc(var(--character-angle, 0deg) + 10deg));
+  }
+  30%, 50%, 70%, 90% {
+    transform: translate(-50%, -50%) rotate(calc(var(--character-angle, 0deg) - 10deg));
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(calc(var(--character-angle, 0deg) + 10deg));
+  }
+}
