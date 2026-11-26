@@ -12,6 +12,6 @@ window.GameConfig = {
     WATER: 'water',
     FOREST: 'forest'
   },
-  SEASONS: ['summer', 'winter', 'autumn', 'spring'],
+  SEASONS: ['summer', 'autumn', 'winter', 'spring'],
   SEASON: 'summer'
 };
