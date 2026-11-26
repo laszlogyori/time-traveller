@@ -35,10 +35,27 @@
           <button id="retry-button" class="retry-button" type="button">Retry</button>
         </div>
       </div>
-      <button id="start-button" class="start-button" type="button">
-        <span aria-hidden="true">&#9654;</span>
-        <span>Start game</span>
-      </button>
+      <div id="start-panel" class="start-panel">
+        <button id="start-button" class="start-button" type="button">
+          <span aria-hidden="true">&#9654;</span>
+          <span>Start game</span>
+        </button>
+        <div class="start-info">
+          <strong class="story-heading">History</strong>
+          <p class="story-text">Time is unraveling. Spiders have invaded the seasons, spreading through the forests and threatening the future. As the last time traveler, you must gather the lost coins scattered across time to restore the world. Shift the seasons, avoid the spiders, and bring every coin home.</p>
+          <strong class="controls">Controls</strong>
+          <div class="start-info-row">
+            <kbd>Space</kbd>
+            <span>Activate Time-Travel</span>
+            <span class="energy-cost" aria-label="10 percent energy">10% <span aria-hidden="true">⚡</span></span>
+          </div>
+          <div class="start-info-row">
+            <span class="control-icon" aria-hidden="true">🛡️</span>
+            <span>Activates automatically on contact</span>
+            <span class="energy-cost" aria-label="50 percent energy">50% <span aria-hidden="true">⚡</span></span>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="game-hud">
       <div id="coin-display" class="coin-display" aria-live="polite">
@@ -56,6 +73,10 @@
             <div id="energy-level" class="energy-level"></div>
           </div>
         </div>
+      </div>
+      <div id="time-travel-indicator" class="time-travel-indicator" role="status" aria-label="Time travel: ready">
+        <span class="time-travel-icon" aria-hidden="true">⌛</span>
+        <span>Time-Travel</span>
       </div>
       <div id="shield-indicator" class="shield-indicator" role="status" aria-label="Shield: ready">
         <span class="shield-icon" aria-hidden="true">🛡️</span>

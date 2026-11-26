@@ -4,6 +4,7 @@ window.GameConfig = {
   CELL_SIZE: 48,
   PLAYER_SIZE: 36,
   PLAYER_SPEED: 140,
+  TIME_TRAVEL_ENERGY_COST: 10,
   MAX_SPIDERS: 50,
   TILE: {
     GROUND: 'ground',

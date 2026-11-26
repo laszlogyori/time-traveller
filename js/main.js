@@ -16,7 +16,7 @@ window.GameState = {
     if (this.isGameOver) return;
     this.isGameOver = true;
     document.getElementById('game-over-title').textContent = 'You won!';
-    document.getElementById('game-over-cause').textContent = 'You collected all the coins.';
+    document.getElementById('game-over-cause').textContent = 'You have united time once more!';
     document.querySelector('.map-stage').classList.add('game-won');
   }
 };
@@ -86,7 +86,7 @@ function initializeGame() {
   startButton.addEventListener('click', () => {
     if (window.GameState.isStarted) return;
     window.GameState.isStarted = true;
-    startButton.classList.add('is-hidden');
+    document.getElementById('start-panel').classList.add('is-hidden');
     playerController.start();
     window.GameSpider.start();
   });
@@ -97,8 +97,8 @@ function initializeGame() {
 function handleSeasonKey(event) {
   if (event.code !== 'Space' || event.repeat || !window.GameState.isStarted || window.GameState.isGameOver) return;
   event.preventDefault();
-  if (!playerController.consumeEnergy(10)) return;
   const config = window.GameConfig;
+  if (!playerController.consumeEnergy(config.TIME_TRAVEL_ENERGY_COST)) return;
   const currentIndex = config.SEASONS.indexOf(config.SEASON);
   const nextIndex = (currentIndex + 1) % config.SEASONS.length;
   config.SEASON = config.SEASONS[nextIndex];

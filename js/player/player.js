@@ -38,7 +38,11 @@ function createPlayer(mapData) {
 
   function updateEnergyDisplay() {
     const energy = Math.floor(player.energy);
-    document.getElementById('player').classList.toggle('energy-critical', player.energy < 10);
+    const timeTravelUnavailable = player.energy < config.TIME_TRAVEL_ENERGY_COST;
+    const timeTravelIndicator = document.getElementById('time-travel-indicator');
+    timeTravelIndicator.classList.toggle('time-travel-unavailable', timeTravelUnavailable);
+    timeTravelIndicator.setAttribute('aria-label', `Time travel: ${timeTravelUnavailable ? 'unavailable' : 'ready'}`);
+    document.getElementById('player').classList.toggle('energy-critical', timeTravelUnavailable);
     updateShieldIndicator();
     if (energy === displayedEnergy) return;
     displayedEnergy = energy;
