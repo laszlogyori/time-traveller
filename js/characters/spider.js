@@ -11,7 +11,7 @@ function createSpiderElement(id) {
   document.querySelector('.map-stage').appendChild(element);
 }
 
-function createSpider(mapData, id, spawn) {
+function createSpider(mapData, id, spawn, cannotEatThisSummer = false) {
   if (spiders.length >= window.GameConfig.MAX_SPIDERS) return null;
   const config = window.GameConfig;
 
@@ -26,7 +26,7 @@ function createSpider(mapData, id, spawn) {
 
   if (!document.getElementById(id)) createSpiderElement(id);
 
-  const entry = { id, instance: null };
+  const entry = { id, instance: null, cannotEatThisSummer };
   const instance = window.GameCharacters.createAutonomousCharacter(mapData, {
     id,
     spawn,
@@ -36,7 +36,7 @@ function createSpider(mapData, id, spawn) {
     waitOnBlocked: false,
     animationInterval: 0.15,
     onTreeReached(row, col) {
-      eatTree(mapData, instance, row, col);
+      eatTree(mapData, entry, row, col);
     }
   });
   entry.instance = instance;
@@ -59,7 +59,12 @@ function handleSeasonChange() {
     if (tree) tree.removeAttribute('data-eaten');
   });
 
-  if (window.GameConfig.SEASON === 'summer') eatenTrees.clear();
+  if (window.GameConfig.SEASON === 'summer') {
+    eatenTrees.clear();
+    spiders.forEach((entry) => {
+      entry.cannotEatThisSummer = false;
+    });
+  }
 
   if (window.GameConfig.SEASON === 'autumn') {
     spiders.forEach(({ instance }) => instance.grow(1.05));
@@ -87,8 +92,8 @@ function handleSeasonChange() {
   });
 }
 
-function eatTree(mapData, instance, row, col) {
-  if (window.GameConfig.SEASON !== 'summer') return;
+function eatTree(mapData, entry, row, col) {
+  if (window.GameConfig.SEASON !== 'summer' || entry.cannotEatThisSummer) return;
   const key = `${row},${col}`;
   if (eatenTrees.has(key)) return;
   eatenTrees.add(key);
@@ -96,17 +101,17 @@ function eatTree(mapData, instance, row, col) {
   const tree = document.querySelector(`#map .forest[data-row="${row}"][data-col="${col}"]`);
   if (tree) tree.dataset.eaten = 'true';
 
-  multiplySpider(mapData, instance);
+  if (multiplySpider(mapData, entry.instance)) entry.cannotEatThisSummer = true;
 }
 
 function multiplySpider(mapData, instance) {
   const config = window.GameConfig;
-  if (spiders.length >= config.MAX_SPIDERS) return;
+  if (spiders.length >= config.MAX_SPIDERS) return false;
   const spawn = {
     row: Math.floor(instance.character.y / config.CELL_SIZE),
     col: Math.floor(instance.character.x / config.CELL_SIZE)
   };
-  createSpider(mapData, null, spawn);
+  return createSpider(mapData, null, spawn, true) !== null;
 }
 
 window.GameSpider = { createSpider, setTargetProvider, handleSeasonChange };

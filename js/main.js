@@ -60,12 +60,19 @@ function initializeGame() {
     if (collected === coinManager.total) window.GameState.winGame();
   });
   [
-    { id: 'spider-1', spawn: { row: 21, col: 5 } },
-    { id: 'spider-2', spawn: { row: 21, col: 22 } },
-    { id: 'spider-3', spawn: { row: 21, col: 42 } },
-    { id: 'spider-4', spawn: { row: 10, col: 16 } },
-    { id: 'spider-5', spawn: { row: 10, col: 21 } }
-  ].forEach(({ id, spawn }) => window.GameSpider.createSpider(gameMap, id, spawn));
+    { id: 'spider-1', spawn: { row: 19, col: 4 } },
+    { id: 'spider-2', spawn: { row: 9, col: 13 } },
+    { id: 'spider-3', spawn: { row: 22, col: 27 } },
+    { id: 'spider-4', spawn: { row: 0, col: 30 } },
+    { id: 'spider-5', spawn: { row: 12, col: 38 } }
+  ].forEach(({ id, spawn }) => {
+    const config = window.GameConfig;
+    const terrain = gameMap[spawn.row] && gameMap[spawn.row][spawn.col];
+    if (terrain !== config.TILE.GROUND ) {
+      throw new Error(`Invalid starting position for ${id} at row ${spawn.row}, column ${spawn.col}`);
+    }
+    window.GameSpider.createSpider(gameMap, id, spawn);
+  });
   window.GameSpider.setTargetProvider(() => playerController.player);
   document.getElementById('game').classList.remove('is-hidden');
   document.getElementById('loading-screen').classList.add('is-hidden');
@@ -164,7 +171,9 @@ function waitForTextures() {
     .then(initializeGame)
     .catch((error) => {
       document.getElementById('loading-percent').textContent = 'Loading failed';
-      document.getElementById('loading-error').textContent = `Failed texture: ${error.path || 'unknown texture'}`;
+      document.getElementById('loading-error').textContent = error.path
+        ? `Failed texture: ${error.path}`
+        : error.message;
     });
 }
 

@@ -1,144 +1,88 @@
 function createMap(rows, cols) {
   const tile = window.GameConfig.TILE;
-  const map = Array.from(
-    { length: rows },
-    () => Array(cols).fill(tile.ROCK)
-  );
-  const rowScale = rows / 45;
-  const colScale = cols / 90;
+  const map = Array.from({ length: rows }, () => Array(cols).fill(tile.GROUND));
+  const directions = [[-1, 0], [1, 0], [0, -1], [0, 1]];
 
-  function carveRect(top, left, height, width) {
-    const scaledTop = Math.floor(top * rowScale);
-    const scaledLeft = Math.floor(left * colScale);
-    const scaledHeight = Math.max(1, Math.round(height * rowScale));
-    const scaledWidth = Math.max(1, Math.round(width * colScale));
-
-    for (let row = scaledTop; row < scaledTop + scaledHeight; row++) {
-      for (let col = scaledLeft; col < scaledLeft + scaledWidth; col++) {
-        if (row >= 0 && row < rows && col >= 0 && col < cols) {
-          map[row][col] = tile.GROUND;
-        }
-      }
+  for (let row = 0; row < rows; row++) {
+    const y = row / (rows - 1);
+    const riverCenter = (0.25 + 0.48 * y + 0.02 * Math.sin(y * Math.PI * 3)) * (cols - 1);
+    for (let col = 0; col < cols; col++) {
+      const x = col / (cols - 1);
+      const river = Math.abs(col - riverCenter) <= 1.5;
+      const lake = ((x - 0.8) / 0.09) ** 2 + ((y - 0.22) / 0.13) ** 2 < 1;
+      if (river || lake) map[row][col] = tile.WATER;
     }
   }
 
-  function carveCorridor(points, width) {
-    const radius = Math.floor(width / 2);
+  function placeWall(row, col, terrain) {
+    if (row < 0 || row >= rows || col < 0 || col >= cols) return;
+    if (map[row][col] !== tile.GROUND || row + col <= 2) return;
 
-    for (let index = 0; index < points.length - 1; index++) {
-      const start = points[index];
-      const end = points[index + 1];
+    const neighbors = directions
+      .map(([dr, dc]) => [row + dr, col + dc])
+      .filter(([r, c]) => r >= 0 && r < rows && c >= 0 && c < cols && map[r][c] === tile.GROUND);
+    map[row][col] = terrain;
+    if (neighbors.length < 2) return;
 
-      if (start.row === end.row) {
-        const left = Math.min(start.col, end.col);
-        const length = Math.abs(start.col - end.col) + 1;
-        carveRect(start.row - radius, left, width, length);
-      } else if (start.col === end.col) {
-        const top = Math.min(start.row, end.row);
-        const length = Math.abs(start.row - end.row) + 1;
-        carveRect(top, start.col - radius, length, width);
-      } else {
-        const left = Math.min(start.col, end.col);
-        const top = Math.min(start.row, end.row);
-        const horizontalLength = Math.abs(start.col - end.col) + 1;
-        const verticalLength = Math.abs(start.row - end.row) + 1;
+    const visited = Array.from({ length: rows }, () => Array(cols).fill(false));
+    const queue = [neighbors[0]];
+    visited[neighbors[0][0]][neighbors[0][1]] = true;
 
-        carveRect(start.row - radius, left, width, horizontalLength);
-        carveRect(top, end.col - radius, verticalLength, width);
-      }
+    for (let index = 0; index < queue.length; index++) {
+      const [currentRow, currentCol] = queue[index];
+      directions.forEach(([dr, dc]) => {
+        const nextRow = currentRow + dr;
+        const nextCol = currentCol + dc;
+        if (nextRow < 0 || nextRow >= rows || nextCol < 0 || nextCol >= cols) return;
+        if (visited[nextRow][nextCol] || map[nextRow][nextCol] !== tile.GROUND) return;
+        visited[nextRow][nextCol] = true;
+        queue.push([nextRow, nextCol]);
+      });
     }
-  }
-  
-  function paintRect(top, left, height, width, terrain) {
-    const scaledTop = Math.floor(top * rowScale);
-    const scaledLeft = Math.floor(left * colScale);
-    const scaledHeight = Math.max(1, Math.round(height * rowScale));
-    const scaledWidth = Math.max(1, Math.round(width * colScale));
 
-    for (let row = scaledTop; row < scaledTop + scaledHeight; row++) {
-      for (let col = scaledLeft; col < scaledLeft + scaledWidth; col++) {
-        if (row >= 0 && row < rows && col >= 0 && col < cols) {
-          map[row][col] = terrain;
-        }
-      }
-    }
+    if (neighbors.some(([r, c]) => !visited[r][c])) map[row][col] = tile.GROUND;
   }
 
-  carveRect(0, 0, 7, 11);
-  carveRect(1, 21, 9, 15);
-  carveRect(0, 48, 11, 15);
-  carveRect(14, 8, 13, 16);
-  carveRect(13, 31, 13, 16);
-  carveRect(14, 61, 17, 15);
-  carveRect(32, 0, 12, 16);
-  carveRect(34, 36, 10, 18);
-  carveRect(35, 78, 10, 12);
+  const shapes = [
+    ['.###.....', '######...', '.########', '...#####.', '....##...'],
+    ['...###...', '.######..', '#######..', '...######', '.....###.'],
+    ['..###....', '.#####...', '########.', '##..####.', '.....##..'],
+    ['.....##..', '...#####.', '.########', '######...', '..###....'],
+    ['.##..', '###..', '.###.', '.####', '..###', '.###.', '.##..'],
+    ['..##.', '.####', '###..', '####.', '.###.', '..###', '..##.']
+  ];
+  const clusters = [
+    { row: 1, col: 4, shape: 0, terrain: tile.ROCK },
+    { row: 5, col: 0, shape: 4, terrain: tile.FOREST },
+    { row: 6, col: 7, shape: 5, terrain: tile.ROCK },
+    { row: 11, col: 2, shape: 1, terrain: tile.FOREST },
+    { row: 12, col: 12, shape: 4, terrain: tile.ROCK },
+    { row: 16, col: 0, shape: 5, terrain: tile.ROCK },
+    { row: 18, col: 6, shape: 3, terrain: tile.FOREST },
+    { row: 18, col: 16, shape: 2, terrain: tile.ROCK },
+    { row: 0, col: 18, shape: 4, terrain: tile.FOREST },
+    { row: 1, col: 25, shape: 2, terrain: tile.ROCK },
+    { row: 0, col: 40, shape: 5, terrain: tile.FOREST },
+    { row: 6, col: 22, shape: 5, terrain: tile.ROCK },
+    { row: 7, col: 29, shape: 0, terrain: tile.FOREST },
+    { row: 7, col: 40, shape: 4, terrain: tile.ROCK },
+    { row: 12, col: 26, shape: 4, terrain: tile.FOREST },
+    { row: 13, col: 33, shape: 1, terrain: tile.ROCK },
+    { row: 15, col: 41, shape: 5, terrain: tile.FOREST },
+    { row: 18, col: 29, shape: 3, terrain: tile.ROCK },
+    { row: 19, col: 38, shape: 2, terrain: tile.FOREST }
+  ];
 
-  carveCorridor([
-    { row: 3, col: 5 },
-    { row: 8, col: 13 },
-    { row: 5, col: 21 }
-  ], 5);
-  carveCorridor([
-    { row: 5, col: 35 },
-    { row: 8, col: 42 },
-    { row: 5, col: 48 }
-  ], 3);
-  carveCorridor([
-    { row: 5, col: 63 },
-    { row: 11, col: 68 },
-    { row: 22, col: 68 }
-  ], 5);
-  carveCorridor([
-    { row: 22, col: 76 },
-    { row: 29, col: 82 },
-    { row: 40, col: 84 }
-  ], 5);
-  
-  carveCorridor([
-    { row: 9, col: 28 },
-    { row: 18, col: 28 },
-    { row: 19, col: 31 }
-  ], 3);
-  carveCorridor([
-    { row: 19, col: 47 },
-    { row: 22, col: 54 },
-    { row: 22, col: 61 }
-  ], 5);
-  carveCorridor([
-    { row: 19, col: 31 },
-    { row: 20, col: 24 },
-    { row: 20, col: 8 }
-  ], 3);
-  carveCorridor([
-    { row: 20, col: 12 },
-    { row: 31, col: 12 },
-    { row: 38, col: 16 }
-  ], 5);
-  carveCorridor([
-    { row: 26, col: 39 },
-    { row: 31, col: 45 },
-    { row: 39, col: 45 }
-  ], 3);
-  carveCorridor([
-    { row: 39, col: 54 },
-    { row: 40, col: 66 },
-    { row: 40, col: 84 }
-  ], 5);
-
-  paintRect(2, 70, 4, 17, tile.WATER);
-  paintRect(28, 57, 5, 14, tile.WATER);
-  paintRect(15, 63, 7, 6, tile.FOREST);
-  paintRect(35, 1, 7, 7, tile.FOREST);
-  paintRect(35, 57, 7, 8, tile.FOREST);
-  paintRect(37, 80, 5, 9, tile.WATER);
-
-  map[0][0] = tile.GROUND;
-  map[0][1] = tile.GROUND;
-  map[1][0] = tile.GROUND;
-  map[rows - 1][cols - 3] = tile.GROUND;
-  map[rows - 1][cols - 2] = tile.GROUND;
-  map[rows - 1][cols - 1] = tile.GROUND;
+  clusters.forEach(({ row, col, shape, terrain }) => {
+    shapes[shape].forEach((line, rowOffset) => {
+      for (let colOffset = 0; colOffset < line.length; colOffset++) {
+        if (line[colOffset] !== '#') continue;
+        const scaledRow = Math.round((row + rowOffset) * (rows - 1) / 22);
+        const scaledCol = Math.round((col + colOffset) * (cols - 1) / 44);
+        placeWall(scaledRow, scaledCol, terrain);
+      }
+    });
+  });
 
   return map;
 }
