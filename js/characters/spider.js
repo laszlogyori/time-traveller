@@ -35,6 +35,10 @@ function createSpider(mapData, id, spawn, cannotEatThisSummer = false) {
     blockedWait: 5000,
     waitOnBlocked: false,
     animationInterval: 0.15,
+    stuckTimeout: 8,
+    onStuck() {
+      removeSpider(entry);
+    },
     onTargetReached(target) {
       target.handleSpiderCollision();
     },
@@ -60,6 +64,24 @@ function setTargetProvider(provider) {
   spiders.forEach(({ instance }) => instance.setTargetProvider(provider));
 }
 
+function removeSpider(entry) {
+  const index = spiders.indexOf(entry);
+  if (index === -1) return;
+  spiders.splice(index, 1);
+  entry.instance.stop();
+  const element = document.getElementById(entry.id);
+  element.classList.add('spider-dying');
+
+  setTimeout(() => {
+    element.classList.remove('spider-dying');
+    element.classList.add('spider-fading');
+  }, 3000);
+
+  setTimeout(() => {
+    element.remove();
+  }, 8000);
+}
+
 function handleSeasonChange() {
   eatenTrees.forEach((key) => {
     const [row, col] = key.split(',');
@@ -82,22 +104,7 @@ function handleSeasonChange() {
     ? []
     : spiders.filter(({ instance }) => instance.isCollidingWithWater());
 
-  stranded.forEach((entry) => {
-    const index = spiders.indexOf(entry);
-    if (index !== -1) spiders.splice(index, 1);
-    entry.instance.stop();
-    const element = document.getElementById(entry.id);
-    element.classList.add('spider-dying');
-
-    setTimeout(() => {
-      element.classList.remove('spider-dying');
-      element.classList.add('spider-fading');
-    }, 3000);
-
-    setTimeout(() => {
-      element.remove();
-    }, 8000);
-  });
+  stranded.forEach(removeSpider);
 }
 
 function eatTree(mapData, entry, row, col) {

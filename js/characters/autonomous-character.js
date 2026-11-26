@@ -32,6 +32,9 @@ function createAutonomousCharacter(mapData, options) {
   let targetProvider = null;
   let isStopped = false;
   let treeContact = null;
+  let progressX = character.x;
+  let progressY = character.y;
+  let timeWithoutProgress = 0;
 
   function getElement() {
     return document.getElementById(options.id);
@@ -194,6 +197,20 @@ function createAutonomousCharacter(mapData, options) {
 
     const deltaTime = Math.min((time - previousTime) / 1000, 0.05);
     previousTime = time;
+
+    if (options.stuckTimeout && options.onStuck) {
+      if (Math.hypot(character.x - progressX, character.y - progressY) >= config.CELL_SIZE / 2) {
+        progressX = character.x;
+        progressY = character.y;
+        timeWithoutProgress = 0;
+      } else {
+        timeWithoutProgress += deltaTime;
+        if (timeWithoutProgress >= options.stuckTimeout) {
+          options.onStuck();
+          return;
+        }
+      }
+    }
 
     if (time < waitingUntil) {
       updateAnimation(deltaTime, false);
