@@ -424,6 +424,10 @@ table.map {
   display: flex;
 }
 
+.map-stage.game-won .retry-button {
+  display: none;
+}
+
 .game-over-cause {
   font-size: clamp(18px, 3vw, 32px);
   font-weight: 400;
