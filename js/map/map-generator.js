@@ -38,7 +38,6 @@ function createMap(rows, cols) {
         const length = Math.abs(start.row - end.row) + 1;
         carveRect(top, start.col - radius, length, width);
       } else {
-        // Diagonal waypoints become an L-shaped passage, keeping both ends connected.
         const left = Math.min(start.col, end.col);
         const top = Math.min(start.row, end.row);
         const horizontalLength = Math.abs(start.col - end.col) + 1;
@@ -65,18 +64,16 @@ function createMap(rows, cols) {
     }
   }
 
-  // Large rooms create breathing space instead of a single-cell corridor maze.
-  carveRect(0, 0, 7, 11);       // entrance room
-  carveRect(1, 21, 9, 15);     // northwest room
-  carveRect(0, 48, 11, 15);    // northeast room
-  carveRect(14, 8, 13, 16);    // west room
-  carveRect(13, 31, 13, 16);   // central room
-  carveRect(14, 61, 17, 15);   // east room
-  carveRect(32, 0, 12, 16);    // southwest room
-  carveRect(34, 36, 10, 18);   // south room
-  carveRect(35, 78, 10, 12);   // exit room
+  carveRect(0, 0, 7, 11);
+  carveRect(1, 21, 9, 15);
+  carveRect(0, 48, 11, 15);
+  carveRect(14, 8, 13, 16);
+  carveRect(13, 31, 13, 16);
+  carveRect(14, 61, 17, 15);
+  carveRect(32, 0, 12, 16);
+  carveRect(34, 36, 10, 18);
+  carveRect(35, 78, 10, 12);
 
-  // Main route: it bends organically and has several broad sections.
   carveCorridor([
     { row: 3, col: 5 },
     { row: 8, col: 13 },
@@ -98,7 +95,6 @@ function createMap(rows, cols) {
     { row: 40, col: 84 }
   ], 5);
   
-  // Side branches and loops make multiple routes possible.
   carveCorridor([
     { row: 9, col: 28 },
     { row: 18, col: 28 },
@@ -130,7 +126,6 @@ function createMap(rows, cols) {
     { row: 40, col: 84 }
   ], 5);
 
-  // Decorative terrain regions add variety without cutting the main route.
   paintRect(2, 70, 4, 17, tile.WATER);
   paintRect(28, 57, 5, 14, tile.WATER);
   paintRect(15, 63, 7, 6, tile.FOREST);
@@ -138,7 +133,6 @@ function createMap(rows, cols) {
   paintRect(35, 57, 7, 8, tile.FOREST);
   paintRect(37, 80, 5, 9, tile.WATER);
 
-  // Make both requested corners unambiguous and walkable.
   map[0][0] = tile.GROUND;
   map[0][1] = tile.GROUND;
   map[1][0] = tile.GROUND;

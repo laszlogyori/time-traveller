@@ -88,14 +88,28 @@ h1 {
 
 .map-wrap {
   width: 100%;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   min-height: 0;
   overflow: hidden;
-  border: 1px solid #2a2a2a;
-  background: #0e0e0e;
+  border: 14px solid transparent;
+  border-radius: 14px;
+  background:
+    linear-gradient(#0e0e0e, #0e0e0e) padding-box,
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 7px,
+      rgba(66, 29, 12, 0.48) 8px,
+      rgba(238, 186, 111, 0.22) 9px,
+      transparent 12px
+    ) border-box,
+    linear-gradient(135deg, #d7a45e 0%, #80451f 18%, #b8753c 34%, #583019 52%, #c58a4d 71%, #6b391c 86%, #d2a15b 100%) border-box;
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.65),
+    inset 0 0 0 2px rgba(255, 220, 156, 0.48),
+    inset 0 0 0 5px rgba(64, 32, 14, 0.75);
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-start;
+  justify-content: flex-start;
   isolation: isolate;
   contain: paint;
 }
@@ -106,12 +120,13 @@ h1 {
   align-items: stretch;
   justify-content: center;
   gap: 12px;
-  width: min(100%, 460px);
+  width: min(100%, 520px);
   margin-bottom: 8px;
 }
 
 .coin-display,
-.energy-display {
+.energy-display,
+.season-indicator {
   flex: 0 0 auto;
   padding: 10px 12px;
   border: 1px solid #53615a;
@@ -138,6 +153,28 @@ h1 {
 .energy-display {
   width: min(220px, calc(100% - 24px));
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.energy-content {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.season-indicator {
+  display: flex;
+  min-width: 90px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  text-transform: capitalize;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.season-icon {
+  font-size: 23px;
+  line-height: 1;
 }
 
 .energy-label {
@@ -206,6 +243,8 @@ table.map {
   flex: 0 0 auto;
   isolation: isolate;
   contain: layout paint;
+  transform: scale(var(--map-scale, 1));
+  transform-origin: top left;
 }
 
 .map-stage.game-over::before {
@@ -360,7 +399,6 @@ table.map {
   opacity: 0.5;
 }
 
-/* Individual tile files generated from sprites.png. */
 table.map[data-season='summer'] .ground { background-image: url('tiles/cell-summer-ground.png'); }
 table.map[data-season='summer'] .water { background-image: url('tiles/cell-summer-water.png'); }
 table.map[data-season='summer'] .rock { background-image: url('tiles/cell-summer-ground.png'); }

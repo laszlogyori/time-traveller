@@ -43,13 +43,19 @@
         <span id="coin-count">0 / 20</span>
       </div>
       <div id="energy-display" class="energy-display" aria-live="polite">
-        <div class="energy-label">
-          <span>Energy</span>
-          <span id="energy-value">100%</span>
+        <div class="energy-content">
+          <div class="energy-label">
+            <span>Energy</span>
+            <span id="energy-value">100%</span>
+          </div>
+          <div class="energy-track" role="progressbar" aria-label="Player energy" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
+            <div id="energy-level" class="energy-level"></div>
+          </div>
         </div>
-        <div class="energy-track" role="progressbar" aria-label="Player energy" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
-          <div id="energy-level" class="energy-level"></div>
-        </div>
+      </div>
+      <div id="season-indicator" class="season-indicator" aria-label="Current season: summer">
+        <span id="season-icon" class="season-icon" aria-hidden="true">☀️</span>
+        <span id="season-name">Summer</span>
       </div>
     </div>
   </div>

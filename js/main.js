@@ -23,6 +23,33 @@ window.GameState = {
 function initializeGame() {
   gameMap = window.GameMap.createMap(window.GameConfig.ROWS, window.GameConfig.COLS);
   window.GameRenderer.renderMap(gameMap);
+  const gameLayout = document.querySelector('.game-layout');
+  const mapWrap = document.querySelector('.map-wrap');
+  const mapStage = document.querySelector('.map-stage');
+  const gameHud = document.querySelector('.game-hud');
+  const fitMapToFrame = () => {
+    const layoutStyle = getComputedStyle(gameLayout);
+    const wrapStyle = getComputedStyle(mapWrap);
+    const hudStyle = getComputedStyle(gameHud);
+    const borderWidth = parseFloat(wrapStyle.borderLeftWidth) + parseFloat(wrapStyle.borderRightWidth);
+    const borderHeight = parseFloat(wrapStyle.borderTopWidth) + parseFloat(wrapStyle.borderBottomWidth);
+    const availableWidth = gameLayout.clientWidth - borderWidth;
+    const availableHeight = gameLayout.clientHeight - gameHud.offsetHeight
+      - parseFloat(hudStyle.marginTop) - parseFloat(hudStyle.marginBottom)
+      - parseFloat(layoutStyle.rowGap) - borderHeight;
+    const mapWidth = mapStage.offsetWidth;
+    const mapHeight = mapStage.offsetHeight;
+    if (availableWidth <= 0 || availableHeight <= 0 || !mapWidth || !mapHeight) return;
+
+    const scale = Math.min(1, availableWidth / mapWidth, availableHeight / mapHeight);
+    mapWrap.style.width = `${mapWidth * scale + borderWidth}px`;
+    mapWrap.style.height = `${mapHeight * scale + borderHeight}px`;
+    mapStage.style.setProperty('--map-scale', scale);
+  };
+  const resizeObserver = new ResizeObserver(fitMapToFrame);
+  resizeObserver.observe(gameLayout);
+  resizeObserver.observe(gameHud);
+  resizeObserver.observe(mapStage);
   playerController = window.GamePlayer.createPlayer(gameMap);
   coinManager = window.GameCoins.createCoinManager(gameMap, playerController.player);
   coinManager.setSeason(window.GameConfig.SEASON);
@@ -42,6 +69,7 @@ function initializeGame() {
   window.GameSpider.setTargetProvider(() => playerController.player);
   document.getElementById('game').classList.remove('is-hidden');
   document.getElementById('loading-screen').classList.add('is-hidden');
+  fitMapToFrame();
   document.addEventListener('keydown', handleSeasonKey);
   document.getElementById('retry-button').addEventListener('click', () => window.location.reload());
 }
@@ -54,10 +82,23 @@ function handleSeasonKey(event) {
   const currentIndex = config.SEASONS.indexOf(config.SEASON);
   const nextIndex = (currentIndex + 1) % config.SEASONS.length;
   config.SEASON = config.SEASONS[nextIndex];
+  updateSeasonIndicator(config.SEASON);
   if (coinManager) coinManager.setSeason(config.SEASON);
   window.GameRenderer.updateSeason(config.SEASON);
   window.GameSpider.handleSeasonChange();
   if (!playerController.isWalkable()) window.GameState.endGame('You drowned.');
+}
+
+function updateSeasonIndicator(season) {
+  const seasonIcons = {
+    summer: '☀️',
+    winter: '❄️',
+    autumn: '🍂',
+    spring: '🌱'
+  };
+  document.getElementById('season-icon').textContent = seasonIcons[season];
+  document.getElementById('season-name').textContent = season;
+  document.getElementById('season-indicator').setAttribute('aria-label', `Current season: ${season}`);
 }
 
 function loadTexture(path) {
