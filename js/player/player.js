@@ -12,7 +12,8 @@ function createPlayer(mapData) {
   const player = {
     x: (spawn.col + 0.5) * config.CELL_SIZE,
     y: (spawn.row + 0.5) * config.CELL_SIZE,
-    energy: 100
+    energy: 100,
+    handleSpiderCollision
   };
   let previousTime = performance.now();
   let animationTimer = 0;
@@ -22,10 +23,23 @@ function createPlayer(mapData) {
   let displayedEnergy = null;
   let lowEnergyTimer;
   let coinCollectionHandler = null;
+  let shieldUntil = 0;
+  let shieldTimer;
+
+  function updateShieldIndicator() {
+    const indicator = document.getElementById('shield-indicator');
+    const active = performance.now() < shieldUntil;
+    const unavailable = !active && player.energy < 50;
+    const state = active ? 'active' : unavailable ? 'unavailable' : 'ready';
+    indicator.classList.toggle('shield-in-use', active);
+    indicator.classList.toggle('shield-unavailable', unavailable);
+    indicator.setAttribute('aria-label', `Shield: ${state}`);
+  }
 
   function updateEnergyDisplay() {
     const energy = Math.floor(player.energy);
     document.getElementById('player').classList.toggle('energy-critical', player.energy < 10);
+    updateShieldIndicator();
     if (energy === displayedEnergy) return;
     displayedEnergy = energy;
     document.getElementById('energy-value').textContent = `${energy}%`;
@@ -53,6 +67,30 @@ function createPlayer(mapData) {
     player.energy -= amount;
     updateEnergyDisplay();
     return true;
+  }
+
+  function restoreEnergy(amount) {
+    player.energy = Math.min(100, player.energy + amount);
+    updateEnergyDisplay();
+  }
+
+  function handleSpiderCollision() {
+    const now = performance.now();
+    if (now < shieldUntil) return;
+    if (!consumeEnergy(50)) {
+      window.GameState.endGame('A spider bit you.');
+      return;
+    }
+
+    shieldUntil = now + 5000;
+    const playerElement = document.getElementById('player');
+    playerElement.classList.add('shield-active');
+    updateShieldIndicator();
+    clearTimeout(shieldTimer);
+    shieldTimer = setTimeout(() => {
+      playerElement.classList.remove('shield-active');
+      updateShieldIndicator();
+    }, 5000);
   }
 
   function setCoinCollectionHandler(handler) {
@@ -192,7 +230,13 @@ function createPlayer(mapData) {
     if (!(event.key in keys)) return;
 
     event.preventDefault();
+    if (isPressed && !window.GameState.isStarted) return;
     keys[event.key] = isPressed;
+  }
+
+  function start() {
+    previousTime = performance.now();
+    requestAnimationFrame(update);
   }
 
   document.addEventListener('keydown', (event) => handleKey(event, true));
@@ -207,12 +251,13 @@ function createPlayer(mapData) {
   setFacing(0, 0);
   render();
   updateEnergyDisplay();
-  requestAnimationFrame(update);
 
   return {
     player,
+    start,
     isWalkable: () => isWalkable(player.x, player.y),
     consumeEnergy,
+    restoreEnergy,
     setCoinCollectionHandler
   };
 }

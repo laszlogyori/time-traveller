@@ -35,6 +35,9 @@ function createSpider(mapData, id, spawn, cannotEatThisSummer = false) {
     blockedWait: 5000,
     waitOnBlocked: false,
     animationInterval: 0.15,
+    onTargetReached(target) {
+      target.handleSpiderCollision();
+    },
     onTreeReached(row, col) {
       eatTree(mapData, entry, row, col);
     }
@@ -44,7 +47,12 @@ function createSpider(mapData, id, spawn, cannotEatThisSummer = false) {
   if (targetProvider) instance.setTargetProvider(targetProvider);
 
   spiders.push(entry);
+  if (window.GameState.isStarted) instance.start();
   return instance;
+}
+
+function start() {
+  spiders.forEach(({ instance }) => instance.start());
 }
 
 function setTargetProvider(provider) {
@@ -114,4 +122,4 @@ function multiplySpider(mapData, instance) {
   return createSpider(mapData, null, spawn, true) !== null;
 }
 
-window.GameSpider = { createSpider, setTargetProvider, handleSeasonChange };
+window.GameSpider = { createSpider, start, setTargetProvider, handleSeasonChange };

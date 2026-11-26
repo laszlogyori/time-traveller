@@ -35,6 +35,10 @@
           <button id="retry-button" class="retry-button" type="button">Retry</button>
         </div>
       </div>
+      <button id="start-button" class="start-button" type="button">
+        <span aria-hidden="true">&#9654;</span>
+        <span>Start game</span>
+      </button>
     </div>
     <div class="game-hud">
       <div id="coin-display" class="coin-display" aria-live="polite">
@@ -52,6 +56,10 @@
             <div id="energy-level" class="energy-level"></div>
           </div>
         </div>
+      </div>
+      <div id="shield-indicator" class="shield-indicator" role="status" aria-label="Shield: ready">
+        <span class="shield-icon" aria-hidden="true">🛡️</span>
+        <span>Shield</span>
       </div>
       <div id="season-indicator" class="season-indicator" aria-label="Current season: summer">
         <span id="season-icon" class="season-icon" aria-hidden="true">☀️</span>

@@ -58,16 +58,24 @@ function createAutonomousCharacter(mapData, options) {
     targetProvider = provider;
   }
 
-  function hasReachedTarget() {
-    if (!targetProvider) return false;
+  function checkTargetCollision() {
+    if (!targetProvider) return;
     const target = targetProvider();
-    if (!target) return false;
+    if (!target) return;
     const targetDistance = halfSize + config.PLAYER_SIZE / 2;
-    return Math.hypot(character.x - target.x, character.y - target.y) <= targetDistance;
+    if (Math.hypot(character.x - target.x, character.y - target.y) <= targetDistance
+      && options.onTargetReached) {
+      options.onTargetReached(target);
+    }
   }
 
   function stop() {
     isStopped = true;
+  }
+
+  function start() {
+    previousTime = performance.now();
+    requestAnimationFrame(update);
   }
 
   function isWalkable(x, y) {
@@ -181,6 +189,9 @@ function createAutonomousCharacter(mapData, options) {
   function update(time) {
     if (window.GameState.isGameOver || isStopped) return;
 
+    checkTargetCollision();
+    if (window.GameState.isGameOver) return;
+
     const deltaTime = Math.min((time - previousTime) / 1000, 0.05);
     previousTime = time;
 
@@ -219,10 +230,8 @@ function createAutonomousCharacter(mapData, options) {
       character.y = nextY;
       if (!getTreeAt(character.x, character.y)) treeContact = null;
       render();
-      if (hasReachedTarget()) {
-        window.GameState.endGame('A spider bit you.');
-        return;
-      }
+      checkTargetCollision();
+      if (window.GameState.isGameOver) return;
     } else {
       const tree = getTreeAt(nextX, nextY);
       const contactKey = tree ? `${tree.row},${tree.col}` : null;
@@ -243,10 +252,10 @@ function createAutonomousCharacter(mapData, options) {
   setSprite('stand');
   setFacing(0, 1);
   render();
-  requestAnimationFrame(update);
 
   return {
     character,
+    start,
     setTargetProvider,
     isWalkable: () => isWalkable(character.x, character.y),
     isCollidingWithWater: () => overlapsTerrain(character.x, character.y, config.TILE.WATER),

@@ -3,6 +3,7 @@ let playerController;
 let coinManager;
 window.GameTextures = new Map();
 window.GameState = {
+  isStarted: false,
   isGameOver: false,
   endGame(cause) {
     if (this.isGameOver) return;
@@ -55,7 +56,11 @@ function initializeGame() {
   coinManager.setSeason(window.GameConfig.SEASON);
   document.getElementById('coin-count').textContent = `0 / ${coinManager.total}`;
   playerController.setCoinCollectionHandler((x, y, radius) => {
+    const previousCollected = coinManager.collected;
     const collected = coinManager.collectAt(x, y, radius);
+    if (collected > previousCollected) {
+      playerController.restoreEnergy((collected - previousCollected) * 10);
+    }
     document.getElementById('coin-count').textContent = `${collected} / ${coinManager.total}`;
     if (collected === coinManager.total) window.GameState.winGame();
   });
@@ -77,12 +82,20 @@ function initializeGame() {
   document.getElementById('game').classList.remove('is-hidden');
   document.getElementById('loading-screen').classList.add('is-hidden');
   fitMapToFrame();
+  const startButton = document.getElementById('start-button');
+  startButton.addEventListener('click', () => {
+    if (window.GameState.isStarted) return;
+    window.GameState.isStarted = true;
+    startButton.classList.add('is-hidden');
+    playerController.start();
+    window.GameSpider.start();
+  });
   document.addEventListener('keydown', handleSeasonKey);
   document.getElementById('retry-button').addEventListener('click', () => window.location.reload());
 }
 
 function handleSeasonKey(event) {
-  if (event.code !== 'Space' || event.repeat || window.GameState.isGameOver) return;
+  if (event.code !== 'Space' || event.repeat || !window.GameState.isStarted || window.GameState.isGameOver) return;
   event.preventDefault();
   if (!playerController.consumeEnergy(10)) return;
   const config = window.GameConfig;
